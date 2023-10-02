@@ -1,0 +1,5 @@
+name: Demo
+runtime: dotnet
+description: Pulumi demo
+#backend:
+#  url: file://~/.pulumi/project-stacks/IaCDemo

@@ -1,0 +1,72 @@
+trigger:
+  paths:
+    include:
+    - Bicep
+    exclude:
+    - Bicep/deploy.sh
+    - Bicep/clean.sh
+
+parameters:
+  - name: Destroy
+    displayName: Destroy infrastructure
+    type: boolean
+    default: false
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+
+- stage: Preview
+  condition: not(${{ parameters.Destroy }})
+  jobs:
+  - job: Preview
+    steps:
+    - task: ARMDeploymentInsights@2
+      inputs:
+        deploymentName: Test
+        deploymentScope: Subscription
+        armServiceConnection: StefMicrosoft
+        subscriptionId: 00000000-0000-0000-0000-000000000000
+        templateLocation: File
+        templateFile: Bicep/main.bicep
+        location: West Europe
+
+- stage: Deploy
+  dependsOn: Preview
+  condition: not(${{ parameters.Destroy }})
+  jobs:
+  - deployment: DeployTemplate
+    displayName: Deploy
+    environment: StefMicrosoftEnvironment
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: AzureResourceManagerTemplateDeployment@3
+            inputs:
+              deploymentScope: Subscription
+              azureResourceManagerConnection: StefMicrosoft
+              subscriptionId: 00000000-0000-0000-0000-000000000000
+              location: West Europe
+              templateLocation: Linked artifact
+              csmFile: Bicep/main.bicep
+              deploymentMode: Incremental
+
+- stage: Destroy
+  condition: ${{ parameters.Destroy }}
+  jobs:
+  - deployment: DestroyTemplate
+    displayName: Destroy
+    environment: StefMicrosoftEnvironment
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: StefMicrosoft
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: az group delete --subscription StefTenant -g rg-bicep -y

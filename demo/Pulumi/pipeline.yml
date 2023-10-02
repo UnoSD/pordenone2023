@@ -1,0 +1,79 @@
+trigger:
+  paths:
+    include:
+    - Pulumi
+    exclude:
+    - Pulumi/deploy.sh
+    - Pulumi/clean.sh
+
+parameters:
+  - name: Destroy
+    displayName: Destroy infrastructure
+    type: boolean
+    default: false
+
+variables:
+- name: PULUMI_CONFIG_PASSPHRASE
+  value: ''
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+
+- stage: Preview
+  condition: not(${{ parameters.Destroy }})
+  jobs:
+  - job: Preview
+    steps:
+    - task: Pulumi@1
+      inputs:
+        azureSubscription: StefMicrosoft
+        command: preview
+        loginArgs: azblob://pulumi?storage_account=saiacdevweu
+        cwd: Pulumi
+        stack: dev
+        createStack: true
+
+- stage: Up
+  dependsOn: Preview
+  condition: not(${{ parameters.Destroy }})
+  jobs:
+  - deployment: UpTemplate
+    displayName: Up
+    environment: StefMicrosoftEnvironment
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: Pulumi@1
+            inputs:
+              azureSubscription: StefMicrosoft
+              command: up
+              args: --yes
+              loginArgs: azblob://pulumi?storage_account=saiacdevweu
+              cwd: Pulumi
+              stack: dev
+              createStack: true
+
+- stage: Destroy
+  condition: ${{ parameters.Destroy }}
+  jobs:
+  - deployment: DestroyTemplate
+    displayName: Destroy
+    environment: StefMicrosoftEnvironment
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: Pulumi@1
+            inputs:
+              azureSubscription: StefMicrosoft
+              command: destroy
+              args: --yes
+              loginArgs: azblob://pulumi?storage_account=saiacdevweu
+              cwd: Pulumi
+              stack: dev
+              createStack: true

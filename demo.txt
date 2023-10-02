@@ -1,0 +1,71 @@
+Dedicated project (Repo, Pipelines)
+
+Repo
+- Folders for IaC tools
+- Each folder has script + pipeline + local dev
+
+ARM
+- Non-human language
+- Visual noise
+- Resources
+
+Terraform
+- Industry standard
+- No visual noise
+- Resources
+- State file
+- New DSL
+- Complex logic
+
+Pulumi
+- GP languages
+- Full C#, .NET
+- YAML
+- Resources
+- Terraform plain state
+- Pulumi encrypted
+
+Bicep
+- Multi-cloud to be
+- No state
+- Microsoft supported
+
+Pipelines
+- Three stages
+- Conditional destroy
+- Run ARM
+
+YAML pipeline
+- Three stages
+- Destroy condition
+- Environment
+
+Azure portal
+
+ARM approval
+
+Insight
+
+All pipelines
+
+Portal resource
+
+Run ARM again, show no changes in preview
+
+ARM destroy
+
+Environments
+
+Approvals and checks tab
+- Approve your own
+- Environment checks
+
+YAML pipeline
+- Remove environment line
+- Deployment identity
+
+Permissions and service connections
+
+Integrations
+
+Bicep, Terraform, Pulumi previews
